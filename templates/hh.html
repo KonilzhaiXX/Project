@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Multiple streams</title>
+    <link rel="stylesheet" type= "text/css" href="{{ url_for('static', filename='styles/style.css') }}">
+
+  </head>
+  <body>
+    <div class="main">
+      <h1>Digit Scanner</h1>
+    </div>
+    <div class="step1">
+      <button id="video1-start-stop">Video 1</button><br><br>
+      <button id="btn">Click</button>
+
+    </div>
+    <center>
+    <div id="video" class="example-style-2">
+      
+        <video id="video1" playsinline style="transform: scaleX(1);"></video>
+        <div class="scan-region-highlight" style="position: absolute; pointer-events: none; transform: scaleX(1); width: 576px; height: 87px; top: 180px; left: 32px;">
+        <svg class="scan-region-highlight-svg" viewBox="0 0 238 238" preserveAspectRatio="none" style="position:absolute;width:100%;height:100%;left:0;top:0;fill:none;stroke:#e9b213;stroke-width:4;stroke-linecap:round;stroke-linejoin:round">
+        <path d="M31 2H10a8 8 0 0 0-8 8v21M207 2h21a8 8 0 0 1 8 8v21m0 176v21a8 8 0 0 1-8 8h-21m-176 0H10a8 8 0 0 1-8-8v-21"></path></svg><svg class="code-outline-highlight" preserveAspectRatio="none" style="display:none;width:100%;height:100%;fill:none;stroke:#e9b213;stroke-width:5;stroke-dasharray:25;stroke-linecap:round;stroke-linejoin:round"><polygon></polygon></svg></div>
+        </center>
+        <style>
+            
+            #video.example-style-2 {
+                position: relative;
+                width: max-content;
+                height: max-content;
+                overflow: hidden;
+            }
+            #video {
+                line-height: 0;
+            }
+            div {
+                margin-bottom: 16px;
+            }
+            div {
+                display: block;
+            }
+            element.style {
+                transform: scaleX(-1);
+            }
+            video {
+                object-fit: contain;
+            }
+           
+            element.style {
+                position: absolute;
+                pointer-events: none;
+                transform: scaleX(-1);
+                width: 480px;
+                height: 480px;
+                top: 120px;
+                left: 200px;
+            }
+            #video.example-style-2 .scan-region-highlight {
+                border-radius: 0px;
+                text-align: center;
+                outline: rgba(0, 0, 0, .7) solid 50vmax;
+            }
+            div {
+                margin-bottom: 16px;
+            }
+            div {
+                display: block;
+            }
+        
+            element.style {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                fill: none;
+                stroke: #e9b213;
+                stroke-width: 4;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+            #video.example-style-2 .scan-region-highlight-svg {
+                display: none;
+            }
+            svg:not(:root) {
+                overflow: hidden;
+            }
+            style {
+                position: absolute;
+                pointer-events: none;
+                transform: scaleX(-1);
+                width: 480px;
+                height: 480px;
+                top: 120px;
+                left: 200px;
+            }
+           
+            #video1{
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            
+            element.style {
+                display: block;
+            }
+        </style>
+        <canvas hidden id="can"></canvas>
+    </div>
+    <svg class="code-outline-highlight" preserveAspectRatio="none" style="display:none;width:100%;height:100%;fill:none;stroke:#e9b213;stroke-width:5;stroke-dasharray:25;stroke-linecap:round;stroke-linejoin:round"><polygon></polygon></svg>
+  </div>
+  
+    <div class="text">
+      <input type="text" id="result" name="result"/>
+      <br>
+
+      <button id="button1">Snap!</button>
+      <canvas hidden id="canvas" width="640" height="480"></canvas>
+      </div>
+    
+    
+
+    <script type="text/javascript">
+      
+      var canvas = document.getElementById('canvas');
+      var context = canvas.getContext('2d');
+      var hidden = document.getElementById("hidden");
+
+
+      var video1_started = false;
+      let video1 = document.getElementById('video1');
+      var video1_button = document.getElementById('video1-start-stop');
+      var startStopVideo1 = function(e) {
+        if (video1_started) {
+          video1.srcObject && video1.srcObject.getTracks().forEach(function(track) {
+            track.stop();
+          });
+          video1.srcObject = null;
+          video1_started = false;
+          console.log("Video 1 stopped");
+          console.log(video1_started);
+        }
+        else {
+          var constraints1 = {
+            audio: false,
+            video:{
+              height: {
+                max: 480,
+              },
+              width: {
+                max: 640,
+              },
+              deviceId: device_id,
+              facingMode: {
+                exact: 'user'
+              },
+            },
+          };
+          navigator.mediaDevices.getUserMedia(constraints1).then(function(stream) {
+            video1.srcObject = stream;
+            video1_started = true;      
+            video1.onloadedmetadata = function(e){
+                video1.play();
+            }        
+            console.log("Video 1 started");
+            console.log(video1_started);
+            
+          }).catch(function(err) {
+            console.error("Device access checks failed: ", err, constraints1);
+          }) 
+        }
+      }
+      
+
+      var device_id = null;
+      function handleError(error) {
+        console.log('device enumeration error: ', error);
+      }
+      var setupVideo = function(devices) {
+        for (var i = 0; i !== devices.length; ++i) {
+          var device = devices[i];
+          if (device.kind === 'videoinput') {
+            device_id = device.deviceId;
+            console.log("Using video device: " + device.label + "(" + device_id + ")");
+            video1_button.addEventListener("click", startStopVideo1);
+            break;
+          }
+        }
+      }
+
+      if (device_id == null){
+          navigator.mediaDevices.enumerateDevices().then(setupVideo).catch(handleError);
+      }
+      
+      
+        
+      document.getElementById("button1").addEventListener("click", function() {
+        if (video1_started === true){   
+          var canvas = document.getElementById("canvas");
+          var context = canvas.getContext("2d");    
+          context.drawImage(video1, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(upload, "image/jpeg");  // convert to file and execute function `upload`
+          console.log("Saving Photo"); 
+          
+          function upload(file) {
+              var formdata =  new FormData();
+              formdata.append('snap', file);
+          
+              var xhr = new XMLHttpRequest();
+              xhr.open("POST", "{{ url_for('upload') }}", true);
+          
+              xhr.onload = function() {
+                  if(this.status = 200) {
+                      console.log(this.response) 
+                } else {
+                      console.error(xhr);
+                }
+                  alert(this.response);
+            }
+            xhr.send(formdata);
+        };  //xhr.send(str);
+      }
+      else {
+        function text() {
+          let info = document.getElementById('result').value;
+          var forms = new FormData();
+          forms.append('text',info);
+          var xml = new XMLHttpRequest();
+          xml.open("POST", "{{ url_for('give') }}", true);
+          xml.onload = function() {
+            if(this.status = 200){
+              console.log(this.response)
+            } else {
+              console.error(xml);
+            }
+            alert(this.response);
+          }
+          xml.send(forms);
+        };
+        text();
+  }
+});
+
+function drawImge(){
+  var video = document.querySelector("#video1");
+  var canvas = document.querySelector("#videocanvas");
+  let ctx = canvas.getContext('2d');
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  let faceArea = 300;
+  let pX=canvas.width/2 - faceArea/2;
+  let pY=canvas.height/2 - faceArea/2;
+
+  ctx.strokeStyle = "red";
+  ctx.strokeRect(pX - 200, pY, faceArea + 400, faceArea  - 100);
+  ctx.lineWidth = 7;
+  ctx.stroke();
+
+  //setTimeout(drawImge, 1000/60);
+}
+var video = document.getElementById("video1");
+video.onplay = function() {
+    //return drawImge()
+}
+  
+  document.getElementById("btn").addEventListener("click", function() {
+    var video = document.getElementById("video1")
+    var canvas = document.querySelector("#can");
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+
+    canvas.toBlob(upload, "image/jpeg");  // convert to file and execute function `upload`
+    console.log("Saving Photo");   
+    function upload(file) {
+      var formdata =  new FormData();
+      formdata.append('snap', file);
+  
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "{{ url_for('upload') }}", true);
+
+      xhr.onload = function() {
+          if(this.status = 200) {
+              console.log(this.response) 
+        } else {
+              console.error(xhr);
+        }
+          alert(this.response);
+    }
+    xhr.send(formdata);
+};  //xhr.send(str);
+   });
+
+
+
+    </script>
+    <!--<div class="res">
+      <table class = "table table-success" border="1" colspan="2" align="center">
+          <thead>
+              <tbody>
+                  {% for i in base %}
+                      <tr><th colspan="1">INVENT</th><td>{{ i.INVENT }}</td>></tr>
+                      <tr><th colspan="1">Surname</th><td>{{ i.Familia }}</td></tr>
+                      <tr><th colspan="1">Name</th><td>{{ i.Imia }}</td></tr>
+                  {% endfor %}
+              </tbody>
+          </thead>
+      </table>
+  </div>-->
+  </body>
+</html>
